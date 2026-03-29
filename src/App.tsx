@@ -47,7 +47,10 @@ import {
   Lock,
   Globe as GlobeIcon,
   CheckSquare,
-  Square as SquareIcon
+  Square as SquareIcon,
+  Share2,
+  Share,
+  Link2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useDropzone } from 'react-dropzone';
@@ -76,7 +79,9 @@ import {
   updateUserProfile,
   getUserProfile,
   deleteSummary,
-  deleteMultipleSummaries
+  deleteMultipleSummaries,
+  getSummaryByShareId,
+  toggleSummaryPublicStatus
 } from './firebase';
 import { LoginPage, SignUpPage } from './AuthPages';
 
@@ -134,6 +139,123 @@ const DeleteConfirmationModal = ({
         </div>
       )}
     </AnimatePresence>
+  );
+};
+
+const SharedSummaryPage = ({ summary, onBack }: { summary: any, onBack: () => void }) => {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-white mb-8 transition-colors group"
+        >
+          <ArrowRight className="w-5 h-5 rotate-180 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-bold uppercase tracking-widest text-xs">Back to App</span>
+        </button>
+
+        <div className="bg-white dark:bg-zinc-900 rounded-[48px] p-8 md:p-12 shadow-2xl border border-gray-100 dark:border-zinc-800">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                  Shared Summary
+                </div>
+                <div className="text-gray-400 dark:text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
+                  {summary.type}
+                </div>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter dark:text-white leading-none">
+                {summary.title}
+              </h1>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-2 space-y-12">
+              <section>
+                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+                  Executive Summary
+                </h2>
+                <div className="prose prose-slate dark:prose-invert max-w-none">
+                  <Markdown>{summary.summary}</Markdown>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 mb-8 flex items-center gap-2">
+                  <div className="w-8 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+                  Key Insights
+                </h2>
+                <div className="grid gap-4">
+                  {summary.keySections.map((section, idx) => (
+                    <div key={idx} className="p-6 bg-gray-50 dark:bg-zinc-800/50 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-all">
+                      <h3 className="font-bold text-lg mb-2 dark:text-white">{section.title}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{section.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-12">
+              <section>
+                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+                  Topics
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {summary.mainTopics.map((topic, idx) => (
+                    <span key={idx} className="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl text-sm font-bold dark:text-white shadow-sm">
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              {summary.links && summary.links.length > 0 && (
+                <section>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-zinc-500 mb-6 flex items-center gap-2">
+                    <div className="w-8 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+                    Resources
+                  </h2>
+                  <div className="space-y-3">
+                    {summary.links.map((link, idx) => (
+                      <a 
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl group hover:bg-white dark:hover:bg-zinc-800 transition-all border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1">{link.category}</span>
+                          <span className="font-bold text-sm dark:text-white truncate max-w-[180px]">{link.title}</span>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-12 text-center">
+          <p className="text-gray-400 dark:text-zinc-600 text-sm font-medium mb-4">
+            Generated with AI Summary App
+          </p>
+          <button 
+            onClick={onBack}
+            className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-bold hover:scale-105 transition-all shadow-xl"
+          >
+            Create Your Own Summary
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -1229,7 +1351,12 @@ const SettingsPage = ({
   );
 };
 
-const HistoryPage = ({ user, onNavigate, onSelectSummary }: { user: FirebaseUser, onNavigate: (view: any) => void, onSelectSummary: (summary: any) => void }) => {
+const HistoryPage = ({ user, onNavigate, onSelectSummary, onTogglePublic }: { 
+  user: FirebaseUser, 
+  onNavigate: (view: any) => void, 
+  onSelectSummary: (summary: any) => void,
+  onTogglePublic: (id: string, isPublic: boolean) => void
+}) => {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -1420,6 +1547,35 @@ const HistoryPage = ({ user, onNavigate, onSelectSummary }: { user: FirebaseUser
                       </div>
                       <div className="flex items-center gap-2">
                         <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTogglePublic(item.id, !item.isPublic);
+                          }}
+                          className={cn(
+                            "p-2 rounded-lg transition-all opacity-0 group-hover:opacity-100",
+                            item.isPublic 
+                              ? "text-green-500 bg-green-50 dark:bg-green-900/20" 
+                              : "text-gray-300 dark:text-zinc-700 hover:text-black dark:hover:text-white"
+                          )}
+                          title={item.isPublic ? "Make Private" : "Make Public"}
+                        >
+                          {item.isPublic ? <Share2 className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                        </button>
+                        {item.isPublic && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const shareUrl = `${window.location.origin}${window.location.pathname}?share=${item.shareId}`;
+                              navigator.clipboard.writeText(shareUrl);
+                              toast.success("Share link copied!");
+                            }}
+                            className="p-2 text-gray-300 dark:text-zinc-700 hover:text-black dark:hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                            title="Copy Share Link"
+                          >
+                            <Link2 className="w-5 h-5" />
+                          </button>
+                        )}
+                        <button 
                           onClick={(e) => handleDeleteIndividual(e, item.id)}
                           disabled={isDeleting}
                           className="p-2 text-gray-300 dark:text-zinc-700 hover:text-red-500 dark:hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
@@ -1471,7 +1627,9 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
 );
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'profile' | 'login' | 'signup' | 'history' | 'settings'>('home');
+  const [view, setView] = useState<'home' | 'profile' | 'login' | 'signup' | 'history' | 'settings' | 'shared'>('home');
+  const [sharedSummary, setSharedSummary] = useState<any | null>(null);
+  const [loadingShared, setLoadingShared] = useState(false);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
     const saved = localStorage.getItem('theme');
@@ -1548,6 +1706,42 @@ export default function App() {
   });
 
   const displayResult = translatedSummary || result;
+
+  const handleLoadSharedSummary = async (shareId: string) => {
+    setLoadingShared(true);
+    try {
+      const summary = await getSummaryByShareId(shareId);
+      if (summary) {
+        setSharedSummary(summary);
+        setView('shared');
+      } else {
+        toast.error("Summary not found or is private");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load shared summary");
+    } finally {
+      setLoadingShared(false);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareId = params.get('share');
+    if (shareId) {
+      handleLoadSharedSummary(shareId);
+    }
+  }, []);
+
+  const handleTogglePublic = async (summaryId: string, isPublic: boolean) => {
+    try {
+      await toggleSummaryPublicStatus(summaryId, isPublic);
+      toast.success(isPublic ? "Summary is now public" : "Summary is now private");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update sharing status");
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -1941,7 +2135,16 @@ export default function App() {
       />
       
       <main>
-        {view === 'profile' && user ? (
+        {view === 'shared' && sharedSummary ? (
+          <SharedSummaryPage 
+            summary={sharedSummary} 
+            onBack={() => {
+              setSharedSummary(null);
+              setView('home');
+              window.history.replaceState({}, '', window.location.pathname);
+            }} 
+          />
+        ) : view === 'profile' && user ? (
           <ProfileDashboard 
             user={user} 
             onNavigate={setView} 
@@ -1964,6 +2167,7 @@ export default function App() {
           <HistoryPage 
             user={user} 
             onNavigate={setView} 
+            onTogglePublic={handleTogglePublic}
             onSelectSummary={(s) => {
               setResult(s);
               setView('home');
@@ -2150,6 +2354,19 @@ export default function App() {
                             >
                               {speaking ? <Square className="w-3 h-3 fill-current" /> : <Volume2 className="w-3 h-3" />}
                               {speaking ? "Stop Listening" : "Listen to Report"}
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (displayResult?.shareId) {
+                                  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${displayResult.shareId}`;
+                                  navigator.clipboard.writeText(shareUrl);
+                                  toast.success("Share link copied to clipboard!");
+                                }
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all"
+                            >
+                              <Share2 className="w-3 h-3" />
+                              Share
                             </button>
                             <div className="h-6 w-px bg-gray-100 dark:bg-zinc-800" />
                             <div className="flex items-center gap-2">

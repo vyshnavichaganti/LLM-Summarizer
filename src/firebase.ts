@@ -11,7 +11,17 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp, getDocFromServer, collection, query, where, getDocs, addDoc, orderBy, limit, onSnapshot, deleteDoc, writeBatch } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+import firebaseConfigFromJson from '../firebase-applet-config.json';
+
+// Use environment variables if available (prefixed with VITE_ for client-side access),
+// otherwise fallback to the JSON config file.
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigFromJson.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigFromJson.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigFromJson.projectId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigFromJson.appId,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigFromJson.firestoreDatabaseId,
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

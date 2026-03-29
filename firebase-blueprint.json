@@ -32,10 +32,19 @@
           "type": "object",
           "description": "User notification preferences.",
           "properties": {
-            "emailSummaries": { "type": "boolean", "description": "Send a copy of generated summaries to email." },
-            "activityAlerts": { "type": "boolean", "description": "Receive alerts about account activity." },
-            "weeklyDigest": { "type": "boolean", "description": "Receive a weekly roundup of activity." },
-            "newFeatures": { "type": "boolean", "description": "Receive updates about new features." }
+            "emailSummaries": { "type": "boolean" },
+            "activityAlerts": { "type": "boolean" },
+            "weeklyDigest": { "type": "boolean" },
+            "newFeatures": { "type": "boolean" }
+          }
+        },
+        "privacy": {
+          "type": "object",
+          "description": "User privacy preferences.",
+          "properties": {
+            "publicProfile": { "type": "boolean" },
+            "dataSharing": { "type": "boolean" },
+            "searchIndexing": { "type": "boolean" }
           }
         }
       },
@@ -62,6 +71,8 @@
         "url": { "type": "string" },
         "type": { "type": "string", "enum": ["URL", "File", "Text"] },
         "createdAt": { "type": "string", "format": "date-time" },
+        "isPublic": { "type": "boolean", "description": "Whether the summary is publicly accessible via a share link." },
+        "shareId": { "type": "string", "description": "A unique identifier for sharing." },
         "keySections": {
           "type": "array",
           "items": {
