@@ -1,0 +1,5 @@
+{
+  "name": "OmniSummarize AI",
+  "description": "AI-powered web page analyzer and document summarization portal. Extract key insights, categorize links, and summarize PDFs instantly.",
+  "requestFramePermissions": ["camera"]
+}

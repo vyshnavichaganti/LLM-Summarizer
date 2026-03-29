@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required, immutable) - The unique identifier for the user.
+    //   - displayName: string (optional) - The display name of the user.
+    //   - email: string (required, format: email) - The email address of the user.
+    //   - photoURL: string (optional, format: uri) - The URL of the user's profile photo.
+    //   - createdAt: timestamp (required, immutable) - The timestamp when the profile was created.
+    //
+    // Collection: summaries
+    // Document ID: {summaryId}
+    // Fields:
+    //   - uid: string (required, immutable) - The unique identifier for the user who created the summary.
+    //   - title: string (required) - The title of the summary.
+    //   - summary: string (required) - The summarized text content.
+    //   - url: string (optional) - The source URL or raw text.
+    //   - type: string (required, enum: ["URL", "File", "Text"]) - The type of source.
+    //   - createdAt: timestamp (required, immutable) - The timestamp when the summary was created.
+    //   - keySections: list (optional) - Array of {title, content}
+    //   - links: list (optional) - Array of {url, category, title}
+    //   - mainTopics: list (optional) - Array of strings
+    //   - hasProgrammingContent: bool (optional)
+    //   - extractedCodeSnippets: list (optional) - Array of {language, code, description}
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.createdAt is timestamp &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.matches("^https?://.*")));
+    }
+
+    function isValidUsername(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidSummary(data) {
+      return data.keys().hasAll(['uid', 'title', 'summary', 'type', 'createdAt']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 500 &&
+             data.summary is string && data.summary.size() > 0 && data.summary.size() < 100000 &&
+             data.type in ['URL', 'File', 'Text'] &&
+             data.createdAt is timestamp &&
+             (!('url' in data) || (data.url is string)) &&
+             (!('keySections' in data) || (data.keySections is list)) &&
+             (!('links' in data) || (data.links is list)) &&
+             (!('mainTopics' in data) || (data.mainTopics is list)) &&
+             (!('hasProgrammingContent' in data) || (data.hasProgrammingContent is bool)) &&
+             (!('extractedCodeSnippets' in data) || (data.extractedCodeSnippets is list));
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) &&
+                     request.resource.data.uid == resource.data.uid &&
+                     request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    match /usernames/{username} {
+      allow read: if true; // Publicly readable for login lookup
+      allow create: if isAuthenticated() && 
+                      request.auth.uid == request.resource.data.uid &&
+                      isValidUsername(request.resource.data);
+      allow update: if false; // Usernames are immutable for now
+      allow delete: if false;
+    }
+
+    match /summaries/{summaryId} {
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      allow create: if isAuthenticated() && isValidSummary(request.resource.data);
+      allow update: if false; // Summaries are immutable for now
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+  }
+}
