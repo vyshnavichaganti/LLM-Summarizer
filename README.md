@@ -1,17 +1,17 @@
-🚀 OmniSummarize AI
+# 🚀 OmniSummarize AI
 
 OmniSummarize AI is a fast, intelligent, and user-friendly web application that transforms long-form content into concise, meaningful summaries using advanced AI models. Whether you're a student, researcher, or professional, this tool helps you extract key insights instantly and boost productivity.
 
-🌐 Live Demo
+# 🌐 Live Demo
 👉 https://omnisummarizeai.vercel.app/
 
-📌 Overview
+# 📌 Overview
 OmniSummarize AI is designed to simplify information consumption by automatically condensing large volumes of text into structured summaries. It leverages modern Natural Language Processing (NLP) techniques to retain context, highlight key ideas, and present content in a readable format.
 
-AI summarization tools like this help users save time, improve comprehension, and extract essential insights without reading entire documents �.
+AI summarization tools like this help users save time, improve comprehension, and extract essential insights without reading entire documents .
 AISummarizer
 
-✨ Features
+# ✨ Features
 
 🔹 Smart Text Summarization
 Converts long text into concise summaries
@@ -35,7 +35,7 @@ Input text processed in real-time
 No unnecessary data storage (privacy-first approach inspired by modern summarizers) �
 Vectora
 
-🧠 How It Works
+# 🧠 How It Works
 
 Input Content
 Paste text directly into the input field
@@ -48,7 +48,8 @@ Maintains logical flow and context
 Use Output
 Copy, download, or integrate into your workflow
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
+
 (Customize this if needed based on your actual project)
 Frontend: HTML, CSS, JavaScript / React
 Backend: Node.js / API-based architecture
